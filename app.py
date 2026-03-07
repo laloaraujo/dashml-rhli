@@ -4,6 +4,8 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -105,10 +107,6 @@ with st.sidebar:
     run_tf = st.checkbox("Usar TensorFlow Autoencoder", value=True)
     st.markdown("---")
     st.caption("Métodos: Autoencoder · IQR · Clustering · Série Temporal")
-
-    st.markdown("---")
-
-    st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.sidebar.columns([1, 2, 1])
     with col2:
@@ -233,35 +231,25 @@ with tab2:
 
     if run_tf:
         try:
-            import keras
-            from keras import layers, Input, Model
-            from sklearn.preprocessing import StandardScaler, LabelEncoder
-
             with st.spinner("Treinando autoencoder..."):
                 feat = df.copy()
-                le = LabelEncoder()
-                feat['CAT_ENC'] = le.fit_transform(feat['CATEGORIA'])
+                feat['CAT_ENC'] = LabelEncoder().fit_transform(feat['CATEGORIA'])
                 feat['MES_ENC'] = LabelEncoder().fit_transform(feat['MES'])
 
                 X = feat[['DIAS', 'CAT_ENC', 'MES_ENC']].values.astype(np.float32)
                 scaler = StandardScaler()
                 X_scaled = scaler.fit_transform(X)
 
-                inp_dim = X_scaled.shape[1]
-                inputs = Input(shape=(inp_dim,))
-                encoded = layers.Dense(8, activation='relu')(inputs)
-                encoded = layers.Dense(4, activation='relu')(encoded)
-                decoded = layers.Dense(8, activation='relu')(encoded)
-                decoded = layers.Dense(inp_dim, activation='linear')(decoded)
+                ae = MLPRegressor(
+                    hidden_layer_sizes=(8, 4, 8),
+                    activation='relu',
+                    max_iter=n_epochs * 10,
+                    random_state=42,
+                    verbose=False
+                )
+                ae.fit(X_scaled, X_scaled)
 
-                ae = Model(inputs, decoded)
-                ae.compile(optimizer='adam', loss='mse')
-
-                history = ae.fit(X_scaled, X_scaled,
-                                 epochs=n_epochs, batch_size=16,
-                                 validation_split=0.1, verbose=0)
-
-                X_pred = ae.predict(X_scaled, verbose=0)
+                X_pred = ae.predict(X_scaled)
                 mse = np.mean(np.power(X_scaled - X_pred, 2), axis=1)
                 threshold = np.mean(mse) + anomaly_threshold * np.std(mse)
 
@@ -273,13 +261,11 @@ with tab2:
             with col_x:
                 st.subheader("Loss durante treinamento")
                 loss_df = pd.DataFrame({
-                    'Época': range(1, n_epochs + 1),
-                    'Treino': history.history['loss'],
-                    'Validação': history.history['val_loss']
+                    'Iteração': range(1, len(ae.loss_curve_) + 1),
+                    'MSE Loss': ae.loss_curve_,
                 })
-                fig_loss = px.line(loss_df, x='Época', y=['Treino','Validação'],
-                                   labels={'value': 'MSE Loss'},
-                                   color_discrete_sequence=['#2dd4bf','#f97316'])
+                fig_loss = px.line(loss_df, x='Iteração', y='MSE Loss',
+                                   color_discrete_sequence=['#2dd4bf'])
                 fig_loss.update_layout(height=320, margin=dict(l=0, r=0, t=10, b=0))
                 st.plotly_chart(fig_loss, width="stretch")
 
