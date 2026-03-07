@@ -104,7 +104,7 @@ with st.sidebar:
     st.markdown("### Parâmetros ML")
     anomaly_threshold = st.slider("Limiar de anomalia (desvios-padrão)", 1.5, 4.0, 2.5, 0.1)
     n_epochs = st.slider("Epocas do Autoencoder", 10, 100, 30, 5)
-    run_tf = st.checkbox("Usar TensorFlow Autoencoder", value=True)
+    run_tf = st.checkbox("Usar Keras Autoencoder", value=True)
     st.markdown("---")
     st.caption("Métodos: Autoencoder · IQR · Clustering · Série Temporal")
 
@@ -148,7 +148,7 @@ st.markdown("---")
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3, tab4 = st.tabs([
     "Visão Geral",
-    "Autoencoder — TensorFlow",
+    "Autoencoder — Keras",
     "Reincidência",
     "Análise Temporal"
 ])
@@ -219,10 +219,10 @@ with tab1:
     st.plotly_chart(fig4, width="stretch")
 
 # ════════════════════════════════════════════════════════════════════
-# TAB 2 — Autoencoder TensorFlow
+# TAB 2 — Autoencoder Keras
 # ════════════════════════════════════════════════════════════════════
 with tab2:
-    st.subheader("Detecção de Anomalias com Autoencoder — TensorFlow")
+    st.subheader("Detecção de Anomalias com Autoencoder — Keras")
     st.markdown(
         "O autoencoder aprende a reconstruir padrões normais de afastamento. "
         "Registros com alto erro de reconstrução são sinalizados como anomalias — "
@@ -301,7 +301,7 @@ with tab2:
             st.error(f"Erro: {e}")
 
     else:
-        st.info("Ative o TensorFlow Autoencoder na sidebar para executar o modelo.")
+        st.info("Ative o Keras Autoencoder na sidebar para executar o modelo.")
         st.subheader("Anomalias via IQR (método estatístico clássico)")
         Q1, Q3 = df['DIAS'].quantile([0.25, 0.75])
         IQR = Q3 - Q1
