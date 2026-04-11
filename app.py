@@ -83,7 +83,7 @@ ARQUIVOS = [
     # 2026
     ('BASE DE DADOS JANEIRO 2026.csv',   'JAN/26'),
     ('BASE DE DADOS FEVEREIRO 2026.csv', 'FEV/26'),
-    # ('BASE DE DADOS MARCO 2026.csv',     'MAR/26'),
+    ('BASE DE DADOS MARÇO 2026.csv',     'MAR/26'),
     # ('BASE DE DADOS ABRIL 2026.csv',     'ABR/26'),
     # ('BASE DE DADOS MAIO 2026.csv',      'MAI/26'),
     # ('BASE DE DADOS JUNHO 2026.csv',     'JUN/26'),
